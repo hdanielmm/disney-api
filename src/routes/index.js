@@ -4,7 +4,7 @@ const dbConnection = require('../config/database');
 
 router.get('/', async (req, res) => {
   try {
-    const [results, fields] = await dbConnection.promise().query('SELECT * FROM mi_tabla');
+    const [results, fields] = await dbConnection.promise().query('SELECT * FROM personaje');
     res.json(results);
   } catch (error) {
     console.error('Error en la consulta:', error);

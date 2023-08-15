@@ -3,7 +3,7 @@ const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
 
-const dbConnection = require('./config/database');
+const dbConnection = require('./src/config/database');
 
 // Middlewares, rutas, etc.
 
