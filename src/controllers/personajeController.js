@@ -21,7 +21,7 @@ async function crearPersonaje(req, res) {
   try {
     const query = 'INSERT INTO Personaje (imagen, nombre, edad, peso, historia) VALUES (?, ?, ?, ?, ?)';
     const [result] = await dbConnection.query(query, [imagen, nombre, edad, peso, historia]);
-    console.log('result: ', result);
+
     res.json({id: result.insert_id, message: 'Personaje creado exitosamente'})
   } catch (error) {
     console.error('Error al insertar personaje: ' + error.message);
@@ -29,7 +29,23 @@ async function crearPersonaje(req, res) {
   }
 }
 
+const editarPersonaje = async(req, res) => {
+  const personajeId = req.params.id;
+  const {imagen, nombre, edad, peso, historia} = req.body;
+
+  try {
+    const query = 'UPDATE Personaje SET imagen = ?, nombre = ?, edad = ?, peso = ?, historia = ? WHERE PersonajeID = ?'
+    const [result] = await dbConnection.query(query, [imagen, nombre, edad, peso, historia, personajeId]);
+console.log(result);
+    res.json({id: result.updated_id, message: 'Personaje actualizado exitosamente'});
+  } catch (error) {
+    console.error('Error al actualizar personaje:', error);
+    res.status(500).json({ error: 'Error al actualizar personaje' });
+  }
+}
+
 module.exports = {
   listPersonajes,
-  crearPersonaje
+  crearPersonaje,
+  editarPersonaje,
 };
