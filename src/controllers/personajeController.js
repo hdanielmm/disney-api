@@ -1,14 +1,19 @@
+const sequelize = require('../config/database');
 const dbConnection = require('../config/database');
+const Personaje = require('../models/Personaje');
 
-async function listPersonajes(req, res) {
+async function listarPersonajes(req, res) {
   try {
-    const query = 'SELECT nombre, imagen from Personaje';
-    const [results, fields] = await dbConnection.query(query);
-    const personajesConEndpoint = results.map((personaje) => ({
-      ...personaje,
-    endpoint: `/personajes/`}));
+    const personajes = await Personaje.findAll();
 
-    res.json(personajesConEndpoint);
+    // Mapear los resultados para incluir el campo de endpoint
+    const listaPersonajes = personajes.map(personaje => ({
+      nombre: personaje.nombre,
+      imagen: personaje.imagen,
+      endpoint: `/personajes/${personaje.id}`
+    }));
+
+    res.json(listaPersonajes);
   } catch (error) {
     console.error('Error al listar personajes:', error);
     res.status(500).json({ error: 'Error al listar personajes' });
@@ -16,36 +21,68 @@ async function listPersonajes(req, res) {
 }
 
 async function crearPersonaje(req, res) {
-  const {imagen, nombre, edad, peso, historia} = req.body;
-  
-  try {
-    const query = 'INSERT INTO Personaje (imagen, nombre, edad, peso, historia) VALUES (?, ?, ?, ?, ?)';
-    const [result] = await dbConnection.query(query, [imagen, nombre, edad, peso, historia]);
+  const { nombre, imagen, edad, peso, historia } = req.body;
 
-    res.json({id: result.insert_id, message: 'Personaje creado exitosamente'})
+  try {
+    const newCharacter = await Personaje.create({
+      nombre,
+      imagen,
+      edad,
+      peso,
+      historia
+    });
+
+    res.json({ id: newCharacter.id, message: 'Personaje creado exitosamente' });
   } catch (error) {
-    console.error('Error al insertar personaje: ' + error.message);
-    res.status(500).json({error: 'Error al insertar personaje'});
+    console.error('Error al crear personaje:', error);
+    res.status(500).json({ error: 'Error al crear personaje' });
   }
 }
 
 const editarPersonaje = async(req, res) => {
   const personajeId = req.params.id;
-  const {imagen, nombre, edad, peso, historia} = req.body;
+  const {nombre, imagen, edad, peso, historia} = req.body;
 
   try {
-    const query = 'UPDATE Personaje SET imagen = ?, nombre = ?, edad = ?, peso = ?, historia = ? WHERE PersonajeID = ?'
-    const [result] = await dbConnection.query(query, [imagen, nombre, edad, peso, historia, personajeId]);
-console.log(result);
-    res.json({id: result.updated_id, message: 'Personaje actualizado exitosamente'});
+    const [updatedRows] = await Personaje.update(
+      { nombre, imagen, edad, peso, historia },
+      { where: { id: personajeId } }
+    );
+
+    if (updatedRows > 0) {
+      res.json({ message: 'Personaje actualizado exitosamente' });
+    } else {
+      res.status(404).json({ error: 'Personaje no encontrado' });
+    }
   } catch (error) {
     console.error('Error al actualizar personaje:', error);
     res.status(500).json({ error: 'Error al actualizar personaje' });
   }
 }
 
+const eliminarPersonaje = async (req, res) =>{
+  const personajeId = req.params.id; // Obtener el ID del personaje de los parámetros de la URL
+
+  try {
+    const eliminarPersonaje = await Personaje.destroy({
+      where: { id: personajeId }
+    });
+
+    if (eliminarPersonaje) {
+      res.json({ message: 'Personaje eliminado exitosamente' });
+    } else {
+      res.status(404).json({ error: 'Personaje no encontrado' });
+    }
+  } catch (error) {
+    console.error('Error al eliminar personaje:', error);
+    res.status(500).json({ error: 'Error al eliminar personaje' });
+  }
+}
+
+
 module.exports = {
-  listPersonajes,
+  listarPersonajes,
   crearPersonaje,
   editarPersonaje,
+  eliminarPersonaje
 };
