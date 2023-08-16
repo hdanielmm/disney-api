@@ -8,6 +8,7 @@ const port = process.env.PORT || 3000;
 // Configuración de la base de datos y modelo
 const sequelize = require('./src/config/database');
 require('./src/models/Personaje');
+require('./src/models/PeliculaSerie');
 
 app.use(express.json());
 
