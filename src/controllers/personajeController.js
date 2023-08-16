@@ -79,10 +79,22 @@ const eliminarPersonaje = async (req, res) =>{
   }
 }
 
+const detallePersonaje = async (req, res) => {
+  try {
+    const [results] = await sequelize.query("SELECT per.nombre, per.imagen, per.edad, per.peso, per.historia, pel.Titulo FROM Personajes per INNER JOIN PersonajePorPelicula pepe ON per.id = pepe.PersonajesId INNER JOIN PeliculaSerie pel ON pel.PeliculaSerieID = pepe.PeliculaSerieId;");
+    console.log(results);
+    res.json(results)
+  } catch (error) {
+    console.error({'messge': 'Error al consultar los detalles del personaje' + error});
+    res.status(500).json({'error': 'Error al consultar los detalles del personaje'})
+  }
+}
+
 
 module.exports = {
   listarPersonajes,
   crearPersonaje,
   editarPersonaje,
-  eliminarPersonaje
+  eliminarPersonaje,
+  detallePersonaje,
 };
